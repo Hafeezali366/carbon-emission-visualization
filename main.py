@@ -29,67 +29,121 @@ def filter_df(dataframe, country_name):
     dataframe = dataframe.reset_index(drop=True)
     # Drop columns from the data to only include required values
     dataframe = dataframe.drop(['country_code', 'country_name'], axis=1)
-
+    
+    # Return resultant DataFrame
     return dataframe
 
 
+def lineplot(df, headers):
+    """
+    This function will plot the line plot for the given DataFrame with
+    appropriate labels, title, legend and save the image.
+
+    Parameters:
+    - df (pd.DataFrame): The input DataFrame containing countries data.
+    - headers (list): List with the name of countries to plot the graph.
+    """
+    # Intitialize the figure
+    plt.figure()
+    
+    # Iterate the headers list to plot values for each country
+    for head in headers:
+        plt.plot(df['year'], df[head], label=head)
+    
+    # Adding x and y labels and title to the plot
+    plt.xlabel('Year')
+    plt.ylabel('CO2 Emission Level')
+    plt.title('Carbon Emission Levels from 1960 to 2019')
+    # Setting x-axis limit of the plot
+    plt.xlim(min(df['year']), max(df['year']))
+    # Add legend to the plot
+    plt.legend()
+    # Save the plot figure
+    plt.savefig('line_plot.png', bbox_inches='tight')
+    # Show the plot
+    plt.show()
+
+
+def scatterplot(df, headers):
+    """
+    This function will plot the scatter plot for the given DataFrame with
+    appropriate labels, title, legend and save the image.
+
+    Parameters:
+    - df (pd.DataFrame): The input DataFrame containing countries data.
+    - headers (list): List with the name of countries to plot the graph.
+    """
+    # Intitialize the figure
+    plt.figure()
+    
+    # Iterate the headers list to plot values for each country
+    for head in headers:
+        plt.scatter(df['year'], df[head], label=head)
+    
+    # Adding x and y labels and title to the plot
+    plt.xlabel('Year')
+    plt.ylabel('CO2 Emission Level')
+    plt.title('Carbon Emission Levels from 1960 to 2019')
+    # Setting x-axis limit of the plot
+    plt.xlim(min(df['year']), max(df['year']))
+    # Add legend to the plot
+    plt.legend()
+    # Save the plot figure
+    plt.savefig('line_plot.png', bbox_inches='tight')
+    # Show the plot
+    plt.show()
+
+
+def barplot(df, headers):
+    """
+    This function will plot the bar plot for the given DataFrame with
+    appropriate labels, title, legend and save the image.
+
+    Parameters:
+    - df (pd.DataFrame): The input DataFrame containing countries data.
+    - headers (list): List with the name of countries to plot the graph.
+    """
+    # Intitialize the figure
+    plt.figure()
+    
+    # Iterate the headers list to plot values for each country
+    for head in headers:
+        plt.bar(df['year'], df[head], label=head)
+    
+    # Adding x and y labels and title to the plot
+    plt.xlabel('Year')
+    plt.ylabel('CO2 Emission Level')
+    plt.title('Carbon Emission Levels from 1960 to 2019')
+    # Setting x-axis limit of the plot
+    plt.xlim(min(df['year']), max(df['year']))
+    # Add legend to the plot
+    plt.legend()
+    # Save the plot figure
+    plt.savefig('line_plot.png', bbox_inches='tight')
+    # Show the plot
+    plt.show()
+
+
 # Import the csv data using pandas read_csv method
-df = pd.read_csv("co2_emissions_kt_by_country.csv")
+dataset = pd.read_csv("co2_emissions_kt_by_country.csv")
+
 # Call the filter_df funcation to get the data for specofied countries
-df_uk = filter_df(df, "United Kingdom")
-df_fr = filter_df(df, "France")
-df_it = filter_df(df, "Italy")
+df_uk = filter_df(dataset, "United Kingdom")
+df_fr = filter_df(dataset, "France")
+df_it = filter_df(dataset, "Italy")
 
-# Ploting first figure
-plt.figure(1)
-# Plot the line plot for three countries using plot function in pyplot
-plt.plot(df_uk['year'], df_uk['value'], label='United Kingdom')
-plt.plot(df_fr['year'], df_fr['value'], label='France')
-plt.plot(df_it['year'], df_it['value'], label='Italy')
-# Adding x and y labels and title to the plot
-plt.xlabel('Year')
-plt.ylabel('CO2 Emission Level')
-plt.title('Carbon Emission Levels from 1960 to 2019')
-# Setting x-axis limit of the plot
-plt.xlim(min(df['year']), max(df['year']))
-# Add legend to the plot
-plt.legend()
-# Save the plot figure
-plt.savefig('line_plot.png', bbox_inches='tight')
-plt.show()
+# Combine the data into one DataFrame
+df = pd.DataFrame({
+    'year': df_uk['year'],
+    'United Kingdom': df_uk['value'],
+    'France': df_fr['value'],
+    'Italy': df_it['value']
+})
 
-# Ploting second figure
-plt.figure(2)
-# Plot the scatter plot for three countries using scatter function in pyplot
-plt.scatter(df_uk['year'], df_uk['value'], label='United Kingdom')
-plt.scatter(df_fr['year'], df_fr['value'], label='France')
-plt.scatter(df_it['year'], df_it['value'], label='Italy')
-# Adding x and y labels and title to the plot
-plt.xlabel('Year')
-plt.ylabel('CO2 Emission Level')
-plt.title('Carbon Emission Levels from 1960 to 2019')
-# Setting x-axis limit of the plot
-plt.xlim(min(df['year']), max(df['year']))
-# Add legend to the plot
-plt.legend()
-# Save the plot figure
-plt.savefig('scatter_plot.png', bbox_inches='tight')
-plt.show()
+# Define list of countries to plot
+header = ["United Kingdom", "France", "Italy"]
 
-# Ploting third figure
-plt.figure(3)
-# Plot the bar plot for three countries using bar function in pyplot
-plt.bar(df_uk['year'], df_uk['value'], label='United Kingdom')
-plt.bar(df_fr['year'], df_fr['value'], label='France')
-plt.bar(df_it['year'], df_it['value'], label='Italy')
-# Adding x and y labels and title to the plot
-plt.xlabel('Year')
-plt.ylabel('CO2 Emission Level')
-plt.title('Carbon Emission Levels from 1960 to 2019')
-# Setting x-axis limit of the plot
-plt.xlim(min(df['year']), max(df['year']))
-# Add legend to the plot
-plt.legend()
-# Save the plot figure
-plt.savefig('bar_plot.png', bbox_inches='tight')
-plt.show()
+# Call all three functions to plot the three graphs
+lineplot(df, header)
+scatterplot(df, header)
+barplot(df, header)
