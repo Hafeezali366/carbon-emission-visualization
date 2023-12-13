@@ -1,149 +1,143 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Oct 24 20:44:47 2023
+Created on Tue Dec 07 16:23:42 2023
 
 @author: Hafeez Ali
 """
 
-# Importing required libraries
+# Importing required modules
+import stats
 import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def filter_df(dataframe, country_name):
+def file_to_dfs(filename):
     """
-    This function will filter the input DataFrame to include only data for a 
-    specific country and reset its index and select the required values.
+    This function will import the csv file into the program and read it in
+    the World Bank format by skiping first rows and remove the columns
+    not needed in the program. It'll clean the dataset and take transpose
+    to return two dataframes.
 
     Parameters:
-    - dataframe (pd.DataFrame): The input DataFrame containing countries data.
-    - country_name (str): The name of the country to filter the data for.
+    - filename (str): The input DataFrame containing countries data.
 
     Returns:
-    dataframe (pd.DataFrame): A new DataFrame containing only the data for
-                              the specified country, with the index reset.
+    df1, df2 (pd.DataFrame): Dataframe containing the indicator data
+                             and transposed version of the dataframe.
     """
-    # Select only the selected country data from the dataset
-    dataframe = dataframe[dataframe["country_name"] == country_name]
-    # Reset the index values
-    dataframe = dataframe.reset_index(drop=True)
-    # Drop columns from the data to only include required values
-    dataframe = dataframe.drop(['country_code', 'country_name'], axis=1)
-    
-    # Return resultant DataFrame
-    return dataframe
+
+    # Read the CSV file and skip the first four rows
+    df1 = pd.read_csv(filename, skiprows=4)
+
+    # Set the list of country names as the index of the dataframe
+    df1 = df1.set_index(pd.Index(list(df1['Country Name'])))
+
+    # Remove the last column that is not needed
+    df1 = df1.iloc[:, :-1]
+
+    # Clean the dataset from the columns not needed
+    df1 = df1.drop(columns=['Country Name', 'Country Code',
+                            'Indicator Code', 'Indicator Name'])
+
+    # Taking transpose of the dataframe
+    df2 = df1.T
+
+    # Return the dataframes
+    return df1, df2
 
 
-def lineplot(df, headers):
-    """
-    This function will plot the line plot for the given DataFrame with
-    appropriate labels, title, legend and save the image.
+# Calling the function to read the required csv files
+df_forest_land_percent_1, df_forest_land_percent_2 = file_to_dfs(
+    'API_AG.LND.FRST.ZS_DS2_en_csv_v2_6224694.csv')
 
-    Parameters:
-    - df (pd.DataFrame): The input DataFrame containing countries data.
-    - headers (list): List with the name of countries to plot the graph.
-    """
-    # Intitialize the figure
-    plt.figure()
-    
-    # Iterate the headers list to plot values for each country
-    for head in headers:
-        plt.plot(df['year'], df[head], label=head)
-    
-    # Adding x and y labels and title to the plot
-    plt.xlabel('Year')
-    plt.ylabel('CO2 Emission Level')
-    plt.title('Carbon Emission Levels from 1960 to 2019')
-    # Setting x-axis limit of the plot
-    plt.xlim(min(df['year']), max(df['year']))
-    # Add legend to the plot
-    plt.legend()
-    # Save the plot figure
-    plt.savefig('line_plot.png', bbox_inches='tight')
-    # Show the plot
-    plt.show()
+df_power_consump_1, df_power_consump_2 = file_to_dfs(
+    'API_EG.USE.ELEC.KH.PC_DS2_en_csv_v2_6229098.csv')
 
+df_co2_emm_1, df_co2_emm_2 = file_to_dfs(
+    'API_EN.ATM.CO2E.KT_DS2_en_csv_v2_6224818.csv')
 
-def scatterplot(df, headers):
-    """
-    This function will plot the scatter plot for the given DataFrame with
-    appropriate labels, title, legend and save the image.
+df_urban_pop_1, df_urban_pop_2 = file_to_dfs(
+    'API_SP.URB.TOTL_DS2_en_csv_v2_6227010.csv')
 
-    Parameters:
-    - df (pd.DataFrame): The input DataFrame containing countries data.
-    - headers (list): List with the name of countries to plot the graph.
-    """
-    # Intitialize the figure
-    plt.figure()
-    
-    # Iterate the headers list to plot values for each country
-    for head in headers:
-        plt.scatter(df['year'], df[head], label=head)
-    
-    # Adding x and y labels and title to the plot
-    plt.xlabel('Year')
-    plt.ylabel('CO2 Emission Level')
-    plt.title('Carbon Emission Levels from 1960 to 2019')
-    # Setting x-axis limit of the plot
-    plt.xlim(min(df['year']), max(df['year']))
-    # Add legend to the plot
-    plt.legend()
-    # Save the plot figure
-    plt.savefig('line_plot.png', bbox_inches='tight')
-    # Show the plot
-    plt.show()
+# Using describe method to get the statistical summary of the dataset
+print('\nStatistical properties of CO2 emission level in Kt of World')
+print(df_co2_emm_2['World'].describe())
+
+# Importing and using the stats function skew to get skew value
+print('\nCentralised and normalised skewness of CO2 emission level of World')
+print(round(stats.skew(df_co2_emm_2['World']), 3))
+
+# Importing and using the stats function kurtosis to get kurtosis value
+print('\nCentralised and normalised kurtosis of CO2 emission level of World')
+print(round(stats.kurtosis(df_co2_emm_2['World']), 3))
+
+# Defining the years and countries list
+years = ['1990', '1995', '2000', '2005', '2010', '2015', '2020']
+countries = ['United Kingdom', 'France', 'United States',
+             'China', 'India', 'Germany', 'Japan', 'Russian Federation']
+
+# Select the values from the dataframe using .loc function
+df_selected = df_co2_emm_2.loc[years, countries]
+
+# Plotting the bar plot for dataframe
+plt.figure(1)
+ax = df_selected.plot(kind='bar', figsize=(10, 6), rot=45)
+# Defining x and y label and title
+ax.set_xlabel('Countries')
+ax.set_ylabel('CO2 Emissions')
+ax.set_title('Bar Plot of CO2 Emissions for different countries')
+plt.legend(title='Carbon Emission in Kt')
+plt.show()
 
 
-def barplot(df, headers):
-    """
-    This function will plot the bar plot for the given DataFrame with
-    appropriate labels, title, legend and save the image.
+df_selected = df_urban_pop_2.loc[years, countries]
 
-    Parameters:
-    - df (pd.DataFrame): The input DataFrame containing countries data.
-    - headers (list): List with the name of countries to plot the graph.
-    """
-    # Intitialize the figure
-    plt.figure()
-    
-    # Iterate the headers list to plot values for each country
-    for head in headers:
-        plt.bar(df['year'], df[head], label=head)
-    
-    # Adding x and y labels and title to the plot
-    plt.xlabel('Year')
-    plt.ylabel('CO2 Emission Level')
-    plt.title('Carbon Emission Levels from 1960 to 2019')
-    # Setting x-axis limit of the plot
-    plt.xlim(min(df['year']), max(df['year']))
-    # Add legend to the plot
-    plt.legend()
-    # Save the plot figure
-    plt.savefig('line_plot.png', bbox_inches='tight')
-    # Show the plot
-    plt.show()
+# Plotting the bar plot for dataframe
+plt.figure(2)
+ax = df_selected.plot(kind='bar', figsize=(10, 6), rot=45)
+# Defining x and y label and title
+ax.set_xlabel('Countries')
+ax.set_ylabel('Urban Population')
+ax.set_title('Bar Plot of urban population for different countries')
+plt.legend(title='Total Urban Population')
+plt.show()
 
 
-# Import the csv data using pandas read_csv method
-dataset = pd.read_csv("co2_emissions_kt_by_country.csv")
+df_selected = df_power_consump_2.loc[years, countries]
 
-# Call the filter_df funcation to get the data for specofied countries
-df_uk = filter_df(dataset, "United Kingdom")
-df_fr = filter_df(dataset, "France")
-df_it = filter_df(dataset, "Italy")
+# Plotting the bar plot for dataframe
+plt.figure(2)
+ax = df_selected.plot(kind='bar', figsize=(10, 6), rot=45)
+# Defining x and y label and title
+ax.set_xlabel('Countries')
+ax.set_ylabel('Electricity Consumption in KWhr')
+ax.set_title('Bar Plot of Electricity Consumption for different countries')
+plt.legend(title='Electricity Consumption in KWhr')
+plt.show()
 
-# Combine the data into one DataFrame
-df = pd.DataFrame({
-    'year': df_uk['year'],
-    'United Kingdom': df_uk['value'],
-    'France': df_fr['value'],
-    'Italy': df_it['value']
-})
+# Plotting the scatter plot for dataframe
+plt.figure(3)
+plt.scatter(df_urban_pop_1.loc['World'], df_co2_emm_1.loc['World'])
+# Defining x and y label and title
+plt.xlabel('Urban Population')
+plt.ylabel('CO2 Emissions (Kt)')
+plt.title("World's Urban Population vs CO2 Emissions")
+plt.show()
 
-# Define list of countries to plot
-header = ["United Kingdom", "France", "Italy"]
+# Plotting the scatter plot for dataframe
+plt.figure(4)
+plt.scatter(df_power_consump_1.loc['World'], df_co2_emm_1.loc['World'])
+# Defining x and y label and title
+plt.xlabel('Power Consumption (KWhr)')
+plt.ylabel('CO2 Emissions (Kt)')
+plt.title("World's Power Consumption (KWhr) vs CO2 Emissions")
+plt.show()
 
-# Call all three functions to plot the three graphs
-lineplot(df, header)
-scatterplot(df, header)
-barplot(df, header)
+# Plotting the scatter plot for dataframe
+plt.figure(5)
+plt.scatter(df_forest_land_percent_1.loc['World'], df_co2_emm_1.loc['World'])
+# Defining x and y label and title
+plt.xlabel('Forest Land (%)')
+plt.ylabel('CO2 Emissions (Kt)')
+plt.title("World's Forest Land (%) vs CO2 Emissions")
+plt.show()
